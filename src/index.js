@@ -33,7 +33,9 @@ app.post("/users", (request, response) => {
     username,
     todos: [],
   });
+  
   return response.status(201).send();
+  
 });
 
 app.get("/todos", verifyExistsUsername, (request, response) => {
@@ -42,7 +44,44 @@ app.get("/todos", verifyExistsUsername, (request, response) => {
 });
 
 app.post("/todos", verifyExistsUsername, (request, response) => {
+  const {user} = request;
+  const {title, deadline} = request.body;
   
+  const todoOperation ={
+    id:uuidv4(),
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date()
+  }
+  user.todos.push(todoOperation)
+  return response.status(201).send();
+})
+
+app.put("/todos/:id", verifyExistsUsername, (request, response) => {
+  const {user} = request;
+  const {title, deadline } = request.body;
+  const {id} = request.params;
+
+  const todo = user.todos.find(todo => todo.id === id);
+  if(!todo){
+    return response.status(404).json({error:'Todo not found'})
+  }
+  todo.title = title;
+  todo.deadline = new Date(deadline);
+  return response.status(201).json(todo);
+})
+app.patch("/todos/:id/done", verifyExistsUsername, (request, response) => {
+  const {user} = request;
+  const {done} = request.body
+  const {id} = request.params;
+
+  const todo = user.todos.find(todo => todo.id === id);
+  if(!todo){
+    return response.status(404).json({error:'Todo not found'})
+  }
+  todo.done = done;
+  return response.status(201).json(todo);
 })
 
 
